@@ -444,6 +444,55 @@
         background: var(--amber);
         transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
       }
+      .yn-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-top: 8px;
+        flex-shrink: 0;
+      }
+      .yn-card {
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        padding: 8px 10px;
+        position: relative;
+        overflow: hidden;
+      }
+      .yn-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: currentColor;
+        opacity: 0.05;
+      }
+      .yn-card.yes {
+        color: var(--red-bright);
+        border-color: rgba(232, 64, 64, 0.3);
+      }
+      .yn-card.no {
+        color: var(--green-bright);
+        border-color: rgba(61, 186, 85, 0.3);
+      }
+      .yn-label {
+        font-size: 8px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        opacity: 0.6;
+        margin-bottom: 3px;
+      }
+      .yn-value {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 22px;
+        letter-spacing: 0.04em;
+        line-height: 1;
+      }
+      .yn-sub {
+        font-size: 7px;
+        letter-spacing: 0.1em;
+        opacity: 0.5;
+        margin-top: 2px;
+        text-transform: uppercase;
+      }
       .hist-block {
         flex-shrink: 0;
         background: rgba(194, 48, 48, 0.05);
@@ -889,6 +938,40 @@
                             className: "prob-fill",
                             style: { width: `${data.probability * 100}%` },
                           }),
+                        ),
+                        h(
+                          "div",
+                          { className: "yn-row" },
+                          h(
+                            "div",
+                            { className: "yn-card yes" },
+                            h(
+                              "div",
+                              { className: "yn-label" },
+                              "Flood  ·  YES",
+                            ),
+                            h(
+                              "div",
+                              { className: "yn-value" },
+                              `${(data.probability * 100).toFixed(1)}%`,
+                            ),
+                            h("div", { className: "yn-sub" }, "P(flood = 1)"),
+                          ),
+                          h(
+                            "div",
+                            { className: "yn-card no" },
+                            h(
+                              "div",
+                              { className: "yn-label" },
+                              "No Flood  ·  NO",
+                            ),
+                            h(
+                              "div",
+                              { className: "yn-value" },
+                              `${((1 - data.probability) * 100).toFixed(1)}%`,
+                            ),
+                            h("div", { className: "yn-sub" }, "P(flood = 0)"),
+                          ),
                         ),
                       ),
                       data.historical_match !== null &&
