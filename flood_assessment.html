@@ -67,8 +67,6 @@
         background: var(--scan);
         opacity: 0.3;
       }
-
-      /* PULSE BANNER */
       .pulse-banner {
         position: sticky;
         top: 0;
@@ -143,8 +141,6 @@
         opacity: 0.7;
         text-transform: uppercase;
       }
-
-      /* SHELL */
       .shell {
         flex: 1;
         display: flex;
@@ -157,8 +153,6 @@
         z-index: 2;
         overflow: hidden;
       }
-
-      /* HEADER */
       .header {
         display: flex;
         align-items: center;
@@ -213,8 +207,6 @@
           opacity: 0.3;
         }
       }
-
-      /* GRID */
       .grid {
         flex: 1;
         display: grid;
@@ -222,8 +214,6 @@
         gap: 14px;
         min-height: 0;
       }
-
-      /* PANEL */
       .panel {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -253,8 +243,6 @@
         height: 10px;
         background: var(--amber);
       }
-
-      /* FIELDS */
       .field {
         margin-bottom: 12px;
         flex-shrink: 0;
@@ -290,8 +278,15 @@
       input::placeholder {
         color: var(--text-muted);
       }
-
-      /* TICK BOXES */
+      /* ── 400mm cap warning ── */
+      .cap-warn {
+        color: var(--red-bright);
+        font-size: 8px;
+        margin-top: 4px;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
       .option-grid {
         display: flex;
         gap: 6px;
@@ -327,7 +322,6 @@
         font-size: 6px;
         color: var(--amber);
       }
-
       .bottom-bar {
         display: flex;
         gap: 16px;
@@ -342,8 +336,6 @@
       .bottom-bar span {
         color: var(--text-dim);
       }
-
-      /* RIGHT PANEL */
       .risk-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -406,8 +398,6 @@
         margin-top: 4px;
         text-transform: uppercase;
       }
-
-      /* ACTION BLOCK */
       .action-block {
         flex-shrink: 0;
         border: 1px solid;
@@ -432,8 +422,6 @@
         font-size: 17px;
         letter-spacing: 0.1em;
       }
-
-      /* PROB */
       .prob-row {
         flex-shrink: 0;
         margin-bottom: 8px;
@@ -456,8 +444,6 @@
         background: var(--amber);
         transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
       }
-
-      /* HISTORICAL */
       .hist-block {
         flex-shrink: 0;
         background: rgba(194, 48, 48, 0.05);
@@ -475,8 +461,6 @@
         text-transform: uppercase;
         margin-bottom: 3px;
       }
-
-      /* AWAIT */
       .await-state {
         flex: 1;
         display: flex;
@@ -505,8 +489,6 @@
         text-transform: uppercase;
         color: var(--text-muted);
       }
-
-      /* RISK COLORS */
       .Critical {
         color: var(--red-bright);
         border-color: var(--red-bright);
@@ -542,7 +524,6 @@
       id="root"
       style="display: flex; flex-direction: column; height: 100%"
     ></div>
-
     <script>
       const { createElement: h, useState, useEffect } = React;
       const DISTRICTS = [
@@ -572,6 +553,25 @@
           water: "No",
         });
         const [data, setData] = useState(null);
+        const [showCap, setShowCap] = useState(false);
+
+        /* ── 400mm hard cap ── */
+        const handleRainfall = (val) => {
+          const num = parseFloat(val);
+          if (isNaN(num)) {
+            setForm({ ...form, rainfall: "" });
+            setShowCap(false);
+          } else if (num > 400) {
+            setForm({ ...form, rainfall: 400 });
+            setShowCap(true);
+          } else if (num < 0) {
+            setForm({ ...form, rainfall: 0 });
+            setShowCap(false);
+          } else {
+            setForm({ ...form, rainfall: val });
+            setShowCap(false);
+          }
+        };
 
         useEffect(() => {
           if (!form.rainfall || !form.district) return;
@@ -584,7 +584,6 @@
               });
               setData(await res.json());
             } catch {
-              // Fallback demo values when backend is offline
               const mm = parseFloat(form.rainfall) || 0;
               const level =
                 mm > 80
@@ -629,7 +628,6 @@
             },
           },
 
-          /* STICKY PULSE BANNER — High/Critical only */
           showBanner &&
             h(
               "div",
@@ -655,8 +653,6 @@
           h(
             "div",
             { className: "shell" },
-
-            /* HEADER */
             h(
               "div",
               { className: "header" },
@@ -688,12 +684,10 @@
               ),
             ),
 
-            /* GRID */
             h(
               "div",
               { className: "grid" },
 
-              /* LEFT — INPUTS */
               h(
                 "div",
                 { className: "panel" },
@@ -702,18 +696,31 @@
                   { className: "panel-title" },
                   "Environmental Parameters",
                 ),
+
                 h(
                   "div",
                   { className: "field" },
-                  h("label", { className: "label" }, "Rainfall Today (mm)"),
+                  h(
+                    "label",
+                    { className: "label" },
+                    "Rainfall Today (mm)  ·  max 400",
+                  ),
                   h("input", {
                     type: "number",
                     value: form.rainfall,
                     placeholder: "Enter intensity…",
-                    onChange: (e) =>
-                      setForm({ ...form, rainfall: e.target.value }),
+                    min: 0,
+                    max: 400,
+                    onChange: (e) => handleRainfall(e.target.value),
                   }),
+                  showCap &&
+                    h(
+                      "div",
+                      { className: "cap-warn" },
+                      "⚠ Auto-clamped — system threshold max 400 mm",
+                    ),
                 ),
+
                 h(
                   "div",
                   { className: "field" },
@@ -729,6 +736,7 @@
                     DISTRICTS.map((d) => h("option", { key: d, value: d }, d)),
                   ),
                 ),
+
                 h(
                   "div",
                   { className: "field" },
@@ -749,6 +757,7 @@
                     ),
                   ),
                 ),
+
                 h(
                   "div",
                   { className: "field" },
@@ -769,6 +778,7 @@
                     ),
                   ),
                 ),
+
                 h(
                   "div",
                   { className: "field" },
@@ -779,6 +789,7 @@
                     onChange: (e) => setForm({ ...form, date: e.target.value }),
                   }),
                 ),
+
                 h(
                   "div",
                   { className: "bottom-bar" },
@@ -788,12 +799,10 @@
                 ),
               ),
 
-              /* RIGHT — RISK ENGINE */
               h(
                 "div",
                 { className: "panel" },
                 h("div", { className: "panel-title" }, "Risk Analysis Engine"),
-
                 data
                   ? h(
                       "div",
@@ -909,7 +918,6 @@
           ),
         );
       }
-
       ReactDOM.createRoot(document.getElementById("root")).render(h(App));
     </script>
   </body>
