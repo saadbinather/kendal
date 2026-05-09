@@ -1,475 +1,631 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>District Flood Risk Assessment</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg:        #090909;
-  --surface:   #101010;
-  --surface2:  #171717;
-  --border:    #252525;
-  --border-hi: #383838;
-  --text:      #EBEBEB;
-  --text-muted:#808080;
-  --text-dim:  #484848;
-  --white:     #FFFFFF;
-  --font: -apple-system, 'Segoe UI', system-ui, sans-serif;
-}
-
-html, body {
-  background: var(--bg);
-  font-family: var(--font);
-  color: var(--text);
-  font-size: 15px;
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#root { min-height: 100vh; padding: 52px 16px 88px; }
-.container { max-width: 740px; margin: 0 auto; }
-
-/* HEADER */
-.header { margin-bottom: 48px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
-.header-eyebrow {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--text-dim); margin-bottom: 18px;
-}
-.header-eyebrow::before {
-  content: ''; display: block; width: 18px; height: 1px; background: var(--text-dim);
-}
-.header-title {
-  font-size: 26px; font-weight: 700; color: var(--white);
-  letter-spacing: -0.025em; line-height: 1.15;
-}
-.header-sub { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
-
-/* LAYOUT */
-.layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-@media (max-width: 620px) { .layout { grid-template-columns: 1fr; } }
-
-/* CARD */
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 26px; }
-.card-title {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase;
-  color: var(--text-dim); margin-bottom: 24px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
-}
-
-/* FORM */
-.field { margin-bottom: 22px; }
-.field:last-child { margin-bottom: 0; }
-
-.label {
-  display: block; font-size: 11px; font-weight: 700;
-  letter-spacing: 0.07em; text-transform: uppercase;
-  color: var(--text-muted); margin-bottom: 8px;
-}
-.req { color: var(--text-dim); }
-
-input[type="number"],
-input[type="date"],
-select {
-  width: 100%; padding: 10px 13px;
-  border: 1px solid var(--border); border-radius: 4px;
-  font-size: 14px; font-family: var(--font);
-  background: var(--surface2); color: var(--text);
-  appearance: none; -webkit-appearance: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  outline: none;
-}
-input[type="number"]:focus,
-input[type="date"]:focus,
-select:focus { border-color: var(--border-hi); box-shadow: 0 0 0 3px rgba(255,255,255,0.03); }
-input::placeholder { color: var(--text-dim); }
-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.45); cursor: pointer; }
-
-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23505050'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 13px center; padding-right: 36px; cursor: pointer;
-}
-select option { background: #1a1a1a; color: var(--text); }
-
-.radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
-.radio-btn {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; font-weight: 500; cursor: pointer;
-  padding: 9px 13px; border: 1px solid var(--border); border-radius: 4px;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
-  user-select: none; color: var(--text-muted);
-}
-.radio-btn:hover { border-color: var(--border-hi); color: var(--text); }
-.radio-btn.active { border-color: #545454; background: var(--surface2); color: var(--white); font-weight: 600; }
-.radio-dot {
-  width: 12px; height: 12px; border: 1.5px solid #404040; border-radius: 50%; flex-shrink: 0;
-  transition: border-color 0.15s, background 0.15s;
-}
-.radio-btn.active .radio-dot { border-color: var(--white); background: var(--white); }
-
-.extreme-warn {
-  display: flex; align-items: flex-start; gap: 9px; margin-top: 9px;
-  padding: 9px 13px;
-  background: #110E00; border: 1px solid #302600; border-radius: 4px;
-  font-size: 12px; font-weight: 500; color: #9A7A00; line-height: 1.4;
-}
-
-/* OUTPUT */
-.risk-badge {
-  min-height: 130px; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  border-radius: 5px; padding: 24px 16px; text-align: center; margin-bottom: 22px;
-}
-.risk-en { font-size: 30px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; }
-.risk-sep { width: 28px; height: 1px; margin: 11px auto; opacity: 0.35; }
-.risk-ur {
-  font-size: 26px; font-weight: 700; line-height: 1.6; direction: rtl;
-  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Alvi Nastaleeq', Georgia, serif;
-}
-
-.badge-low      { background: #03100A; border: 1px solid #0F3D1F; color: #4ADE80; }
-.badge-low      .risk-sep { background: #22C55E; }
-.badge-medium   { background: #110E00; border: 1px solid #3D3000; color: #FCD34D; }
-.badge-medium   .risk-sep { background: #EAB308; }
-.badge-high     { background: #110700; border: 1px solid #3D1D00; color: #FB923C; }
-.badge-high     .risk-sep { background: #F97316; }
-.badge-critical { background: #110000; border: 1px solid #3D0000; color: #F87171; }
-.badge-critical .risk-sep { background: #EF4444; }
-
-/* confidence */
-.confidence-row { margin-bottom: 22px; }
-.conf-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
-.conf-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
-.conf-pct { font-size: 13px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
-.progress-track { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--white); border-radius: 1px; transition: width 0.45s cubic-bezier(0.4,0,0.2,1); }
-
-/* elevation */
-.elev-row { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; margin-bottom: 18px; }
-.elev-cell { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 11px 13px; }
-
-/* info */
-.info-block { margin-bottom: 18px; }
-.info-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px; }
-.info-value { font-size: 14px; color: var(--text); line-height: 1.45; }
-.info-value-lg { font-size: 18px; font-weight: 700; color: var(--white); }
-
-/* action */
-.action-box { border: 1px solid var(--border); border-radius: 4px; padding: 15px 16px; background: var(--surface2); }
-.action-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 7px; }
-.action-text { font-size: 14px; font-weight: 600; color: var(--white); line-height: 1.6; }
-
-/* insufficient */
-.insufficient {
-  background: #0D0D0D; border: 1px solid #1E1E1E; border-radius: 5px;
-  padding: 32px 20px; text-align: center;
-}
-.insuff-glyph { font-size: 22px; color: var(--text-dim); margin-bottom: 14px; letter-spacing: 0.2em; }
-.insuff-en { font-size: 14px; font-weight: 600; color: var(--text-muted); line-height: 1.5; }
-.insuff-ur {
-  font-size: 13px; font-weight: 600; color: var(--text-dim); margin-top: 10px;
-  direction: rtl; font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif; line-height: 1.9;
-}
-.insuff-hint { font-size: 11px; color: var(--text-dim); margin-top: 16px; letter-spacing: 0.04em; }
-
-/* LOADING STATE */
-.loading-panel {
-  background: #0D0D0D; border: 1px solid #1E1E1E; border-radius: 5px;
-  padding: 48px 20px; text-align: center;
-}
-.loading-dots { display: flex; justify-content: center; gap: 7px; margin-bottom: 18px; }
-.loading-dots span {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--text-dim);
-  animation: pulse 1.2s ease-in-out infinite;
-}
-.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes pulse {
-  0%, 80%, 100% { opacity: 0.2; transform: scale(0.85); }
-  40%           { opacity: 1;   transform: scale(1);    }
-}
-.loading-text { font-size: 13px; color: var(--text-muted); font-weight: 500; }
-
-/* ERROR STATE */
-.error-panel {
-  background: #0D0D0D; border: 1px solid #2A1A1A; border-radius: 5px;
-  padding: 32px 20px; text-align: center;
-}
-.error-icon { font-size: 20px; color: #663333; margin-bottom: 14px; letter-spacing: 0.1em; }
-.error-en { font-size: 14px; font-weight: 600; color: #996666; line-height: 1.5; }
-.error-ur {
-  font-size: 13px; font-weight: 600; color: #664444; margin-top: 10px;
-  direction: rtl; font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif; line-height: 1.9;
-}
-
-/* footer */
-.footer {
-  margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border);
-  font-size: 11px; color: var(--text-dim);
-  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
-  letter-spacing: 0.03em;
-}
-</style>
-</head>
-<body>
-<div id="root"></div>
-<script>
-'use strict';
-const { createElement: h, useState, useEffect, useRef } = React;
-
-// ─── DATA ──────────────────────────────────────────────────────────────────
-
-const DISTRICTS = [
-  { name: "Sindh District",        elevation: 109,  terrain: "Flat floodplain",             population: 3200000 },
-  { name: "Balochistan District",  elevation: 610,  terrain: "Semi-arid plateau",            population: 2100000 },
-  { name: "KP District",           elevation: 285,  terrain: "River valley",                 population: 2800000 },
-  { name: "Nowshera",              elevation: 285,  terrain: "River valley — Kabul River",   population: 1500000 },
-  { name: "Jacobabad",             elevation: 57,   terrain: "Extremely low-lying plain",    population: 1100000 },
-];
-
-const RISK_META = {
-  Low:      { en: "Low Risk",      ur: "خطرہ کم",       cls: "badge-low"      },
-  Medium:   { en: "Medium Risk",   ur: "خطرہ درمیانہ",  cls: "badge-medium"   },
-  High:     { en: "High Risk",     ur: "خطرہ زیادہ",    cls: "badge-high"     },
-  Critical: { en: "Critical Risk", ur: "خطرہ شدید",     cls: "badge-critical" },
-};
-
-const ACTIONS = {
-  Low:      "Continue routine monitoring. No immediate action required.",
-  Medium:   "Alert local flood wardens and inspect drainage channels.",
-  High:     "Issue public advisory. Pre-position rescue teams in low-lying areas.",
-  Critical: "Activate emergency protocol immediately. Initiate evacuation of flood-prone zones.",
-};
-
-const API_URL = 'http://localhost:5000/predict';
-
-// ─── HELPERS ───────────────────────────────────────────────────────────────
-
-function todayStr() { return new Date().toISOString().slice(0, 10); }
-function fmt(n)     { return Math.round(n).toLocaleString(); }
-
-function filledCount(f) {
-  return [f.rainfall !== "", f.date !== "", f.district !== "", f.soil !== "", f.water !== ""].filter(Boolean).length;
-}
-
-// ─── COMPONENTS ────────────────────────────────────────────────────────────
-
-function RadioGroup({ name, options, value, onChange }) {
-  return h('div', { className: 'radio-group' },
-    options.map(opt =>
-      h('label', { key: opt, className: `radio-btn${value === opt ? ' active' : ''}` },
-        h('input', {
-          type: 'radio', name, value: opt, checked: value === opt,
-          onChange: () => onChange(opt),
-          style: { display: 'none' },
-        }),
-        h('span', { className: 'radio-dot' }),
-        opt
-      )
-    )
-  );
-}
-
-function LoadingPanel() {
-  return h('div', { className: 'loading-panel' },
-    h('div', { className: 'loading-dots' },
-      h('span'), h('span'), h('span')
-    ),
-    h('div', { className: 'loading-text' }, 'Running assessment…')
-  );
-}
-
-function ErrorPanel() {
-  return h('div', { className: 'error-panel' },
-    h('div', { className: 'error-icon' }, '— — —'),
-    h('div', { className: 'error-en' }, 'Assessment service unavailable — manual evaluation required'),
-    h('div', { className: 'error-ur' }, 'سروس دستیاب نہیں — دستی جائزہ لیں')
-  );
-}
-
-function OutputPanel({ form, apiState }) {
-  const count = filledCount(form);
-
-  if (count < 3) {
-    return h('div', { className: 'insufficient' },
-      h('div', { className: 'insuff-glyph' }, '— — —'),
-      h('div', { className: 'insuff-en' }, 'Insufficient data — manual assessment recommended'),
-      h('div', { className: 'insuff-ur' }, 'ناکافی ڈیٹا — دستی جائزہ تجویز کیا جاتا ہے'),
-      h('div', { className: 'insuff-hint' }, 'Complete at least 3 fields to generate an assessment')
-    );
-  }
-
-  if (apiState.status === 'loading' || apiState.status === 'idle') {
-    return h(LoadingPanel);
-  }
-
-  if (apiState.status === 'error') {
-    return h(ErrorPanel);
-  }
-
-  const { risk_level, confidence_pct, population_at_risk } = apiState.data;
-  const meta = RISK_META[risk_level];
-  const dist = DISTRICTS.find(x => x.name === form.district);
-
-  const popText = population_at_risk === 0
-    ? "Minimal population exposure expected."
-    : `Approximately ${fmt(population_at_risk)} residents at potential risk.`;
-
-  return h('div', null,
-
-    h('div', { className: `risk-badge ${meta.cls}` },
-      h('div', { className: 'risk-en' }, meta.en),
-      h('div', { className: 'risk-sep' }),
-      h('div', { className: 'risk-ur' }, meta.ur)
-    ),
-
-    h('div', { className: 'confidence-row' },
-      h('div', { className: 'conf-header' },
-        h('span', { className: 'conf-label' }, 'Model Confidence'),
-        h('span', { className: 'conf-pct' }, `${confidence_pct}%`)
-      ),
-      h('div', { className: 'progress-track' },
-        h('div', { className: 'progress-fill', style: { width: `${confidence_pct}%` } })
-      )
-    ),
-
-    dist && h('div', { className: 'elev-row' },
-      h('div', { className: 'elev-cell' },
-        h('div', { className: 'info-label' }, 'Elevation'),
-        h('div', { className: 'info-value-lg' }, `${dist.elevation} m`)
-      ),
-      h('div', { className: 'elev-cell' },
-        h('div', { className: 'info-label' }, 'Terrain Type'),
-        h('div', { className: 'info-value', style: { fontSize: '13px' } }, dist.terrain)
-      )
-    ),
-
-    h('div', { className: 'info-block' },
-      h('div', { className: 'info-label' }, 'Population at Risk'),
-      h('div', { className: 'info-value' }, popText)
-    ),
-
-    h('div', { className: 'action-box' },
-      h('div', { className: 'action-label' }, 'Recommended Action'),
-      h('div', { className: 'action-text' }, ACTIONS[risk_level])
-    )
-  );
-}
-
-function App() {
-  const [rainfall, setRainfall] = useState('');
-  const [date,     setDate]     = useState(todayStr());
-  const [district, setDistrict] = useState('');
-  const [soil,     setSoil]     = useState('');
-  const [water,    setWater]    = useState('');
-  const [apiState, setApiState] = useState({ status: 'idle', data: null });
-
-  const debounceRef = useRef(null);
-
-  const form = { rainfall, date, district, soil, water };
-  const count = filledCount(form);
-  const extremeWarn = rainfall !== '' && parseFloat(rainfall) > 400;
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    if (count < 3) {
-      setApiState({ status: 'idle', data: null });
-      return;
-    }
-
-    setApiState({ status: 'loading', data: null });
-
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rainfall, date, district, soil, water }),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        setApiState({ status: 'success', data });
-      } catch (err) {
-        console.error('Flood API error:', err);
-        setApiState({ status: 'error', data: null });
+  <head>
+    <meta charset="UTF-8" />
+    <title>FloodSense Intelligence | Tactical Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&family=Noto+Nastaliq+Urdu:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-    }, 600);
+      :root {
+        --ink: #0a0a08;
+        --paper: #111109;
+        --surface: #17160e;
+        --surface2: #1e1d12;
+        --border: #2a2818;
+        --border2: #3d3a1e;
+        --amber: #d4860c;
+        --amber-bright: #f0a020;
+        --red-bright: #e84040;
+        --green-bright: #3dba55;
+        --text: #e8e0c0;
+        --text-dim: #8a7e58;
+        --text-muted: #4a4530;
+      }
+      body {
+        background: var(--ink);
+        color: var(--text);
+        font-family: "IBM Plex Mono", monospace;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+      .noise {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+        opacity: 0.4;
+      }
+      .scan {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.15) 2px,
+          rgba(0, 0, 0, 0.15) 4px
+        );
+        opacity: 0.3;
+      }
+      .app {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 32px 28px;
+        position: relative;
+        z-index: 2;
+      }
 
-    return () => clearTimeout(debounceRef.current);
-  }, [rainfall, date, district, soil, water]);
+      /* Header & Banners */
+      .header {
+        border-bottom: 1px solid var(--border2);
+        padding-bottom: 20px;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+      }
+      .wordmark {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 52px;
+        color: var(--amber-bright);
+        line-height: 1;
+      }
+      .sensor-banner {
+        background: rgba(212, 134, 12, 0.06);
+        border: 1px solid var(--amber-dim);
+        border-left: 3px solid var(--amber);
+        padding: 8px 14px;
+        font-size: 10px;
+        color: var(--amber);
+        max-width: 400px;
+        line-height: 1.6;
+      }
 
-  return h('div', { className: 'container' },
+      /* Grid Panels */
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1.15fr;
+        gap: 20px;
+      }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-top: 2px solid var(--border2);
+        padding: 24px;
+      }
+      .panel-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 13px;
+        letter-spacing: 0.25em;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 12px;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .panel-title::before {
+        content: "";
+        width: 4px;
+        height: 12px;
+        background: var(--amber);
+      }
 
-    h('header', { className: 'header' },
-      h('div', { className: 'header-eyebrow' }, 'Pakistan Emergency Management'),
-      h('h1', { className: 'header-title' }, 'District Flood Risk Assessment'),
-      h('div', { className: 'header-sub' }, 'Punjab Emergency Management | Flood Watch System')
-    ),
+      /* Inputs */
+      .field {
+        margin-bottom: 20px;
+      }
+      .label {
+        display: block;
+        font-size: 9px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        margin-bottom: 8px;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        color: var(--text);
+        font-family: "IBM Plex Mono";
+        font-size: 13px;
+        outline: none;
+      }
+      input:focus {
+        border-color: var(--amber);
+      }
+      .cap-warn {
+        color: var(--red-bright);
+        font-size: 8px;
+        margin-top: 4px;
+        letter-spacing: 0.05em;
+        font-weight: bold;
+      }
 
-    h('div', { className: 'layout' },
+      /* Ticks */
+      .option-grid {
+        display: flex;
+        gap: 8px;
+      }
+      .tick {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid var(--border2);
+        text-align: center;
+        cursor: pointer;
+        font-size: 11px;
+        color: var(--text-muted);
+        background: var(--surface2);
+        transition: 0.2s;
+      }
+      .tick.on {
+        border-color: var(--amber);
+        color: var(--amber-bright);
+        background: rgba(212, 134, 12, 0.07);
+      }
 
-      h('div', { className: 'card' },
-        h('div', { className: 'card-title' }, 'Field Assessment Data'),
+      /* Risk Display */
+      .risk-badge {
+        padding: 28px 20px;
+        margin-bottom: 20px;
+        border-left: 4px solid;
+        position: relative;
+      }
+      .risk-value {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 56px;
+        line-height: 1;
+      }
+      .urdu {
+        font-family: "Noto Nastaliq Urdu", serif;
+        font-size: 22px;
+        direction: rtl;
+        margin-top: 12px;
+        opacity: 0.75;
+      }
 
-        h('div', { className: 'field' },
-          h('label', { className: 'label' }, 'Rainfall Today (mm)', h('span', { className: 'req' }, ' *')),
-          h('input', {
-            type: 'number', min: 0, max: 500, step: 0.1,
-            placeholder: 'e.g. 45', value: rainfall,
-            onChange: e => setRainfall(e.target.value),
-          }),
-          extremeWarn && h('div', { className: 'extreme-warn' },
-            h('span', null, '⚠'),
-            h('span', null, 'Extreme value entered — please verify reading before proceeding')
-          )
-        ),
+      .Critical {
+        color: var(--red-bright);
+        border-color: var(--red-bright);
+      }
+      .High {
+        color: #e07020;
+        border-color: #e07020;
+      }
+      .Medium {
+        color: var(--amber-bright);
+        border-color: var(--amber-bright);
+      }
+      .Low {
+        color: var(--green-bright);
+        border-color: var(--green-bright);
+      }
 
-        h('div', { className: 'field' },
-          h('label', { className: 'label' }, 'Date', h('span', { className: 'req' }, ' *')),
-          h('input', { type: 'date', value: date, onChange: e => setDate(e.target.value) })
-        ),
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: var(--text-dim);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+      }
+      .prob-track {
+        height: 3px;
+        background: var(--border2);
+        margin-bottom: 12px;
+      }
+      .prob-fill {
+        height: 100%;
+        background: var(--amber);
+        transition: 1s cubic-bezier(0.16, 1, 0.3, 1);
+      }
 
-        h('div', { className: 'field' },
-          h('label', { className: 'label' }, 'District', h('span', { className: 'req' }, ' *')),
-          h('select', { value: district, onChange: e => setDistrict(e.target.value) },
-            h('option', { value: '' }, 'Select district…'),
-            DISTRICTS.map(d => h('option', { key: d.name, value: d.name }, d.name))
-          )
-        ),
+      /* Binary Prediction Box */
+      .binary-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #000;
+        border: 1px solid var(--border2);
+        padding: 12px;
+        margin-bottom: 20px;
+      }
+      .binary-label {
+        font-size: 10px;
+        color: var(--text-dim);
+      }
+      .binary-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      }
+      .binary-desc {
+        font-size: 8px;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+      }
 
-        h('div', { className: 'field' },
-          h('label', { className: 'label' }, 'Soil Condition', h('span', { className: 'req' }, ' *')),
-          h(RadioGroup, { name: 'soil', options: ['Dry', 'Moist', 'Saturated'], value: soil, onChange: setSoil })
-        ),
+      .confidence-tag {
+        display: inline-block;
+        padding: 4px 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border2);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--amber-bright);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="noise"></div>
+    <div class="scan"></div>
+    <div id="root"></div>
 
-        h('div', { className: 'field' },
-          h('label', { className: 'label' }, 'Visible Surface Water', h('span', { className: 'req' }, ' *')),
-          h(RadioGroup, { name: 'water', options: ['Yes', 'No'], value: water, onChange: setWater })
-        )
-      ),
+    <script>
+      const { createElement: h, useState, useEffect } = React;
+      const DISTRICTS = [
+        "Nowshera",
+        "Sindh District",
+        "Balochistan District",
+        "KP District",
+        "Jacobabad",
+      ];
+      const URDU_RISK = {
+        Critical: "انتہائی خطرناک",
+        High: "زیادہ خطرہ",
+        Medium: "معتدل خطرہ",
+        Low: "کم خطرہ",
+      };
 
-      h('div', { className: 'card' },
-        h('div', { className: 'card-title' }, 'Risk Assessment'),
-        h(OutputPanel, { form, apiState })
-      )
-    ),
+      function App() {
+        const [form, setForm] = useState({
+          rainfall: "",
+          date: new Date().toISOString().split("T")[0],
+          district: "",
+          soil: "Dry",
+          water: "No",
+        });
+        const [data, setData] = useState(null);
+        const [showCap, setShowCap] = useState(false);
 
-    h('footer', { className: 'footer' },
-      h('span', null, 'National Disaster Management Authority — Pakistan'),
-      h('span', null, 'Assessments are indicative only. Verify with field teams.')
-    )
-  );
-}
+        const handleRainfall = (val) => {
+          let num = parseFloat(val);
+          if (isNaN(num)) {
+            setForm({ ...form, rainfall: "" });
+            setShowCap(false);
+          } else if (num > 400) {
+            setForm({ ...form, rainfall: 400 });
+            setShowCap(true);
+          } else if (num < 0) {
+            setForm({ ...form, rainfall: 0 });
+            setShowCap(false);
+          } else {
+            setForm({ ...form, rainfall: val });
+            setShowCap(false);
+          }
+        };
 
-ReactDOM.createRoot(document.getElementById('root')).render(h(App, null));
-</script>
-</body>
+        useEffect(() => {
+          if (form.rainfall !== "" && form.district) {
+            const t = setTimeout(async () => {
+              try {
+                const res = await fetch("http://localhost:5000/predict", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(form),
+                });
+                setData(await res.json());
+              } catch (e) {
+                console.error("Backend Error.");
+              }
+            }, 500);
+            return () => clearTimeout(t);
+          }
+        }, [form]);
+
+        return h(
+          "div",
+          { className: "app" },
+          h(
+            "div",
+            { className: "header" },
+            h(
+              "div",
+              null,
+              h(
+                "div",
+                { className: "wordmark" },
+                "Flood",
+                h("span", null, "Sense"),
+              ),
+              h(
+                "div",
+                {
+                  style: {
+                    fontSize: "10px",
+                    color: "#4a4530",
+                    letterSpacing: "0.2em",
+                  },
+                },
+                "DISTRICT RISK INTELLIGENCE",
+              ),
+            ),
+            h(
+              "div",
+              { className: "sensor-banner" },
+              "SENSORS ONLINE — Jacobabad proxy calibrated (Scenario Card 2 Fixed)",
+            ),
+          ),
+
+          h(
+            "div",
+            { className: "grid" },
+            h(
+              "div",
+              { className: "panel" },
+              h("div", { className: "panel-title" }, "Field Telemetry"),
+              h(
+                "div",
+                { className: "field" },
+                h(
+                  "label",
+                  { className: "label" },
+                  "Rainfall Today (mm) [Range: 0-400]",
+                ),
+                h("input", {
+                  type: "number",
+                  value: form.rainfall,
+                  placeholder: "e.g. 120",
+                  onChange: (e) => handleRainfall(e.target.value),
+                }),
+                showCap &&
+                  h(
+                    "div",
+                    { className: "cap-warn" },
+                    "!! AUTO-CLAMPED: SYSTEM THRESHOLD MAX AT 400MM",
+                  ),
+              ),
+              h(
+                "div",
+                { className: "field" },
+                h("label", { className: "label" }, "District Location"),
+                h(
+                  "select",
+                  {
+                    value: form.district,
+                    onChange: (e) =>
+                      setForm({ ...form, district: e.target.value }),
+                  },
+                  h("option", { value: "" }, "Select location…"),
+                  DISTRICTS.map((d) => h("option", { key: d, value: d }, d)),
+                ),
+              ),
+              h(
+                "div",
+                { className: "field" },
+                h("label", { className: "label" }, "Surface Saturation"),
+                h(
+                  "div",
+                  { className: "option-grid" },
+                  ["Dry", "Moist", "Saturated"].map((s) =>
+                    h(
+                      "div",
+                      {
+                        className: `tick${form.soil === s ? " on" : ""}`,
+                        onClick: () => setForm({ ...form, soil: s }),
+                      },
+                      s,
+                    ),
+                  ),
+                ),
+              ),
+              h(
+                "div",
+                { className: "field" },
+                h("label", { className: "label" }, "Visible River Overflow"),
+                h(
+                  "div",
+                  { className: "option-grid" },
+                  ["No", "Yes"].map((w) =>
+                    h(
+                      "div",
+                      {
+                        className: `tick${form.water === w ? " on" : ""}`,
+                        onClick: () => setForm({ ...form, water: w }),
+                      },
+                      w,
+                    ),
+                  ),
+                ),
+              ),
+              h(
+                "div",
+                { className: "field" },
+                h("label", { className: "label" }, "Simulation Date"),
+                h("input", {
+                  type: "date",
+                  value: form.date,
+                  onChange: (e) => setForm({ ...form, date: e.target.value }),
+                }),
+              ),
+            ),
+
+            h(
+              "div",
+              { className: "panel" },
+              h("div", { className: "panel-title" }, "Inference Core Output"),
+              data
+                ? h(
+                    "div",
+                    null,
+                    // Binary Output Box
+                    h(
+                      "div",
+                      { className: "binary-box" },
+                      h(
+                        "div",
+                        null,
+                        h(
+                          "div",
+                          { className: "binary-label" },
+                          "MODEL OUTPUT (flood_event)",
+                        ),
+                        h(
+                          "div",
+                          { className: "binary-desc" },
+                          data.probability > 0.5
+                            ? "POSITIVE DETECTION"
+                            : "NEGATIVE DETECTION",
+                        ),
+                      ),
+                      h(
+                        "div",
+                        { className: "binary-value" },
+                        data.probability > 0.5 ? "1" : "0",
+                      ),
+                    ),
+
+                    h(
+                      "div",
+                      { className: `risk-badge ${data.risk_level}` },
+                      h(
+                        "div",
+                        {
+                          style: {
+                            fontSize: "9px",
+                            opacity: 0.5,
+                            letterSpacing: "0.2em",
+                          },
+                        },
+                        "EVACUATION PRIORITY",
+                      ),
+                      h(
+                        "div",
+                        { className: "risk-value" },
+                        data.risk_level.toUpperCase(),
+                      ),
+                      h(
+                        "div",
+                        { className: "urdu" },
+                        URDU_RISK[data.risk_level],
+                      ),
+                    ),
+
+                    h(
+                      "div",
+                      { className: "stat-row" },
+                      h("span", null, "Model Probability"),
+                      h(
+                        "span",
+                        null,
+                        `${(data.probability * 100).toFixed(1)}%`,
+                      ),
+                    ),
+                    h(
+                      "div",
+                      { className: "prob-track" },
+                      h("div", {
+                        className: "prob-fill",
+                        style: { width: `${data.probability * 100}%` },
+                      }),
+                    ),
+
+                    h(
+                      "div",
+                      { style: { marginBottom: "20px" } },
+                      h("div", { className: "label" }, "System Confidence"),
+                      h(
+                        "div",
+                        { className: "confidence-tag" },
+                        `${data.confidence_pct}% CERTAINTY`,
+                      ),
+                    ),
+
+                    h(
+                      "div",
+                      {
+                        style: {
+                          borderTop: "1px solid var(--border)",
+                          paddingTop: "15px",
+                        },
+                      },
+                      h(
+                        "div",
+                        { className: "label" },
+                        "Estimated Population Exposed",
+                      ),
+                      h(
+                        "div",
+                        {
+                          style: { fontSize: "32px", fontFamily: "Bebas Neue" },
+                        },
+                        data.population_at_risk.toLocaleString(),
+                      ),
+                      h(
+                        "div",
+                        { style: { fontSize: "9px", color: "#444" } },
+                        "PEOPLE IN IMMEDIATE IMPACT ZONE",
+                      ),
+                    ),
+
+                    data.historical_match !== null &&
+                      h(
+                        "div",
+                        {
+                          style: {
+                            marginTop: "20px",
+                            padding: "12px",
+                            border: "1px solid #333",
+                            fontSize: "10px",
+                            color: "#888",
+                          },
+                        },
+                        h(
+                          "div",
+                          {
+                            style: {
+                              color: "var(--red-bright)",
+                              marginBottom: "4px",
+                            },
+                          },
+                          "◆ HISTORICAL OVERLAY MATCHED",
+                        ),
+                        `Ground-truth event: ${data.historical_match === 1 ? "FLOOD (1)" : "SAFE (0)"}`,
+                      ),
+                  )
+                : h(
+                    "div",
+                    {
+                      style: {
+                        textAlign: "center",
+                        paddingTop: "100px",
+                        color: "#333",
+                      },
+                    },
+                    "AWAITING TELEMETRY...",
+                  ),
+            ),
+          ),
+        );
+      }
+      ReactDOM.createRoot(document.getElementById("root")).render(h(App));
+    </script>
+  </body>
 </html>

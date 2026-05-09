@@ -1,0 +1,6 @@
+team_name,institution,district,risk_level,confidence_pct,top_feature,submitted_at
+Team Kendal,FAST NUCES,Nowshera,Low,22.4,ds_idx,2026-05-09 11:28:07
+Team Kendal,FAST NUCES,Jacobabad,Low,0.3,ds_idx,2026-05-09 11:28:07
+Team Kendal,FAST NUCES,Sindh_District,Low,23.4,ds_idx,2026-05-09 11:28:07
+Team Kendal,FAST NUCES,KP_District,Low,0.2,ds_idx,2026-05-09 11:28:07
+Team Kendal,FAST NUCES,Balochistan_District,Low,0.2,ds_idx,2026-05-09 11:28:07
