@@ -1,0 +1,5 @@
+floodsense_training_data.csv
+*.csv
+venv/
+.ipynb_checkpoints/
+__pycache__/
