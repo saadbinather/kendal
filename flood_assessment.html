@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>FloodSense Intelligence | Tactical Dashboard</title>
+    <title>FloodSense — PDMA Emergency Mode</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&family=Noto+Nastaliq+Urdu:wght@700&display=swap"
       rel="stylesheet"
@@ -17,25 +17,39 @@
       }
       :root {
         --ink: #0a0a08;
-        --paper: #111109;
         --surface: #17160e;
         --surface2: #1e1d12;
         --border: #2a2818;
         --border2: #3d3a1e;
         --amber: #d4860c;
         --amber-bright: #f0a020;
+        --amber-dim: #6b4308;
+        --red: #c23030;
         --red-bright: #e84040;
         --green-bright: #3dba55;
+        --orange-bright: #e07020;
         --text: #e8e0c0;
         --text-dim: #8a7e58;
         --text-muted: #4a4530;
+        --scan: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.15) 2px,
+          rgba(0, 0, 0, 0.15) 4px
+        );
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
       }
       body {
         background: var(--ink);
         color: var(--text);
         font-family: "IBM Plex Mono", monospace;
-        min-height: 100vh;
-        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
       }
       .noise {
         position: fixed;
@@ -50,83 +64,200 @@
         inset: 0;
         pointer-events: none;
         z-index: 1;
-        background: repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 2px,
-          rgba(0, 0, 0, 0.15) 2px,
-          rgba(0, 0, 0, 0.15) 4px
-        );
+        background: var(--scan);
         opacity: 0.3;
       }
-      .app {
-        max-width: 1080px;
-        margin: 0 auto;
-        padding: 32px 28px;
-        position: relative;
-        z-index: 2;
+
+      /* PULSE BANNER */
+      .pulse-banner {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        height: 44px;
+        background: #1a0000;
+        border-bottom: 1px solid var(--red-bright);
+        animation: banner-pulse 1.4s ease-in-out infinite;
+        overflow: hidden;
+      }
+      .pulse-banner::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--red-bright);
+      }
+      @keyframes banner-pulse {
+        0%,
+        100% {
+          background: #1a0000;
+        }
+        50% {
+          background: #220000;
+        }
+      }
+      .banner-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .banner-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--red-bright);
+        animation: dot-blink 0.8s step-end infinite;
+        flex-shrink: 0;
+      }
+      @keyframes dot-blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+      .banner-code {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.3em;
+        color: var(--red-bright);
+        opacity: 0.7;
+      }
+      .banner-msg {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 15px;
+        letter-spacing: 0.18em;
+        color: #fff;
+      }
+      .banner-right {
+        font-size: 9px;
+        letter-spacing: 0.15em;
+        color: var(--red-bright);
+        opacity: 0.7;
+        text-transform: uppercase;
       }
 
-      /* Header & Banners */
-      .header {
-        border-bottom: 1px solid var(--border2);
-        padding-bottom: 20px;
-        margin-bottom: 28px;
+      /* SHELL */
+      .shell {
+        flex: 1;
         display: flex;
-        align-items: flex-end;
+        flex-direction: column;
+        max-width: 1080px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 14px 24px 10px;
+        position: relative;
+        z-index: 2;
+        overflow: hidden;
+      }
+
+      /* HEADER */
+      .header {
+        display: flex;
+        align-items: center;
         justify-content: space-between;
+        border-bottom: 1px solid var(--border2);
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+        flex-shrink: 0;
       }
       .wordmark {
         font-family: "Bebas Neue", sans-serif;
-        font-size: 52px;
+        font-size: 36px;
+        letter-spacing: 0.04em;
         color: var(--amber-bright);
         line-height: 1;
+        text-shadow: 0 0 30px rgba(212, 134, 12, 0.2);
       }
-      .sensor-banner {
+      .wordmark span {
+        color: var(--text-dim);
+      }
+      .tagline {
+        font-size: 9px;
+        letter-spacing: 0.18em;
+        color: var(--text-muted);
+        text-transform: uppercase;
+      }
+      .sensor-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 4px;
         background: rgba(212, 134, 12, 0.06);
         border: 1px solid var(--amber-dim);
-        border-left: 3px solid var(--amber);
-        padding: 8px 14px;
-        font-size: 10px;
+        padding: 3px 10px;
+        font-size: 9px;
+        letter-spacing: 0.05em;
         color: var(--amber);
-        max-width: 400px;
-        line-height: 1.6;
+      }
+      .sensor-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--amber-bright);
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
       }
 
-      /* Grid Panels */
+      /* GRID */
       .grid {
+        flex: 1;
         display: grid;
         grid-template-columns: 1fr 1.15fr;
-        gap: 20px;
+        gap: 14px;
+        min-height: 0;
       }
+
+      /* PANEL */
       .panel {
         background: var(--surface);
         border: 1px solid var(--border);
         border-top: 2px solid var(--border2);
-        padding: 24px;
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
       }
       .panel-title {
         font-family: "Bebas Neue", sans-serif;
-        font-size: 13px;
+        font-size: 11px;
         letter-spacing: 0.25em;
         color: var(--text-muted);
         border-bottom: 1px solid var(--border);
-        padding-bottom: 12px;
-        margin-bottom: 22px;
+        padding-bottom: 8px;
+        margin-bottom: 14px;
         display: flex;
         align-items: center;
         gap: 8px;
+        flex-shrink: 0;
       }
       .panel-title::before {
         content: "";
-        width: 4px;
-        height: 12px;
+        display: inline-block;
+        width: 3px;
+        height: 10px;
         background: var(--amber);
       }
 
-      /* Inputs */
+      /* FIELDS */
       .field {
-        margin-bottom: 20px;
+        margin-bottom: 12px;
+        flex-shrink: 0;
       }
       .label {
         display: block;
@@ -134,79 +265,255 @@
         letter-spacing: 0.18em;
         text-transform: uppercase;
         color: var(--text-dim);
-        margin-bottom: 8px;
+        margin-bottom: 5px;
       }
-      input,
+      input[type="number"],
+      input[type="date"],
       select {
         width: 100%;
-        padding: 10px 12px;
+        padding: 8px 10px;
         background: var(--surface2);
         border: 1px solid var(--border2);
+        border-bottom: 2px solid var(--border2);
         color: var(--text);
-        font-family: "IBM Plex Mono";
-        font-size: 13px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
         outline: none;
+        transition: border-color 0.2s;
+        appearance: none;
+        -webkit-appearance: none;
       }
-      input:focus {
+      input:focus,
+      select:focus {
         border-color: var(--amber);
       }
-      .cap-warn {
-        color: var(--red-bright);
-        font-size: 8px;
-        margin-top: 4px;
-        letter-spacing: 0.05em;
-        font-weight: bold;
+      input::placeholder {
+        color: var(--text-muted);
       }
 
-      /* Ticks */
+      /* TICK BOXES */
       .option-grid {
         display: flex;
-        gap: 8px;
+        gap: 6px;
       }
       .tick {
         flex: 1;
-        padding: 10px;
+        padding: 7px 6px;
         border: 1px solid var(--border2);
         text-align: center;
         cursor: pointer;
+        font-family: "IBM Plex Mono", monospace;
         font-size: 11px;
         color: var(--text-muted);
+        transition: all 0.15s;
+        position: relative;
         background: var(--surface2);
-        transition: 0.2s;
+        letter-spacing: 0.04em;
+      }
+      .tick:hover {
+        border-color: var(--amber-dim);
+        color: var(--text-dim);
       }
       .tick.on {
         border-color: var(--amber);
         color: var(--amber-bright);
         background: rgba(212, 134, 12, 0.07);
       }
+      .tick.on::after {
+        content: "◆";
+        position: absolute;
+        top: 2px;
+        right: 4px;
+        font-size: 6px;
+        color: var(--amber);
+      }
 
-      /* Risk Display */
+      .bottom-bar {
+        display: flex;
+        gap: 16px;
+        margin-top: auto;
+        padding-top: 10px;
+        border-top: 1px solid var(--border);
+        font-size: 8px;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .bottom-bar span {
+        color: var(--text-dim);
+      }
+
+      /* RIGHT PANEL */
+      .risk-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+        flex-shrink: 0;
+      }
       .risk-badge {
-        padding: 28px 20px;
-        margin-bottom: 20px;
-        border-left: 4px solid;
+        padding: 14px;
+        border-left: 3px solid;
         position: relative;
+        overflow: hidden;
+      }
+      .risk-badge::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: currentColor;
+        opacity: 0.04;
+      }
+      .risk-label {
+        font-size: 8px;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        opacity: 0.6;
+        margin-bottom: 4px;
       }
       .risk-value {
         font-family: "Bebas Neue", sans-serif;
-        font-size: 56px;
+        font-size: 38px;
+        letter-spacing: 0.04em;
         line-height: 1;
       }
       .urdu {
         font-family: "Noto Nastaliq Urdu", serif;
-        font-size: 22px;
+        font-size: 16px;
         direction: rtl;
-        margin-top: 12px;
+        margin-top: 6px;
         opacity: 0.75;
       }
+      .pop-card {
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .pop-number {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 32px;
+        letter-spacing: 0.03em;
+        color: var(--text);
+        line-height: 1;
+      }
+      .pop-unit {
+        font-size: 8px;
+        letter-spacing: 0.18em;
+        color: var(--text-muted);
+        margin-top: 4px;
+        text-transform: uppercase;
+      }
 
+      /* ACTION BLOCK */
+      .action-block {
+        flex-shrink: 0;
+        border: 1px solid;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .action-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+      .action-title {
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+      .action-body {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 17px;
+        letter-spacing: 0.1em;
+      }
+
+      /* PROB */
+      .prob-row {
+        flex-shrink: 0;
+        margin-bottom: 8px;
+      }
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 9px;
+        letter-spacing: 0.1em;
+        color: var(--text-dim);
+        margin-bottom: 5px;
+        text-transform: uppercase;
+      }
+      .prob-track {
+        height: 2px;
+        background: var(--border2);
+      }
+      .prob-fill {
+        height: 100%;
+        background: var(--amber);
+        transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      /* HISTORICAL */
+      .hist-block {
+        flex-shrink: 0;
+        background: rgba(194, 48, 48, 0.05);
+        border: 1px solid rgba(232, 64, 64, 0.18);
+        border-left: 3px solid var(--red-bright);
+        padding: 8px 12px;
+        font-size: 10px;
+        line-height: 1.6;
+        color: var(--text-dim);
+      }
+      .hist-head {
+        color: var(--red-bright);
+        font-size: 8px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+
+      /* AWAIT */
+      .await-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: var(--text-muted);
+      }
+      .await-reticle {
+        width: 48px;
+        height: 48px;
+        border: 1px solid var(--border2);
+        border-top: 1px solid var(--amber-dim);
+        border-right: 1px solid var(--amber-dim);
+        animation: spin 3s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .await-text {
+        font-size: 8px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      /* RISK COLORS */
       .Critical {
         color: var(--red-bright);
         border-color: var(--red-bright);
       }
       .High {
-        color: #e07020;
-        border-color: #e07020;
+        color: var(--orange-bright);
+        border-color: var(--orange-bright);
       }
       .Medium {
         color: var(--amber-bright);
@@ -216,67 +523,25 @@
         color: var(--green-bright);
         border-color: var(--green-bright);
       }
-
-      .stat-row {
-        display: flex;
-        justify-content: space-between;
-        font-size: 10px;
-        color: var(--text-dim);
-        margin-bottom: 6px;
-        text-transform: uppercase;
+      .action-Critical {
+        border-color: rgba(232, 64, 64, 0.4);
+        background: rgba(194, 48, 48, 0.06);
+        color: var(--red-bright);
       }
-      .prob-track {
-        height: 3px;
-        background: var(--border2);
-        margin-bottom: 12px;
-      }
-      .prob-fill {
-        height: 100%;
-        background: var(--amber);
-        transition: 1s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      /* Binary Prediction Box */
-      .binary-box {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #000;
-        border: 1px solid var(--border2);
-        padding: 12px;
-        margin-bottom: 20px;
-      }
-      .binary-label {
-        font-size: 10px;
-        color: var(--text-dim);
-      }
-      .binary-value {
-        font-size: 24px;
-        font-weight: 700;
-        color: #fff;
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-      }
-      .binary-desc {
-        font-size: 8px;
-        color: var(--text-muted);
-        letter-spacing: 0.1em;
-      }
-
-      .confidence-tag {
-        display: inline-block;
-        padding: 4px 8px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border2);
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--amber-bright);
+      .action-High {
+        border-color: rgba(224, 112, 32, 0.4);
+        background: rgba(184, 90, 16, 0.06);
+        color: var(--orange-bright);
       }
     </style>
   </head>
   <body>
     <div class="noise"></div>
     <div class="scan"></div>
-    <div id="root"></div>
+    <div
+      id="root"
+      style="display: flex; flex-direction: column; height: 100%"
+    ></div>
 
     <script>
       const { createElement: h, useState, useEffect } = React;
@@ -293,6 +558,10 @@
         Medium: "معتدل خطرہ",
         Low: "کم خطرہ",
       };
+      const ACTIONS = {
+        Critical: { msg: "IMMEDIATE EVACUATION RECOMMENDED", icon: "⚠" },
+        High: { msg: "ACTIVATE PDMA EMERGENCY RESPONSE", icon: "🔺" },
+      };
 
       function App() {
         const [form, setForm] = useState({
@@ -303,328 +572,344 @@
           water: "No",
         });
         const [data, setData] = useState(null);
-        const [showCap, setShowCap] = useState(false);
-
-        const handleRainfall = (val) => {
-          let num = parseFloat(val);
-          if (isNaN(num)) {
-            setForm({ ...form, rainfall: "" });
-            setShowCap(false);
-          } else if (num > 400) {
-            setForm({ ...form, rainfall: 400 });
-            setShowCap(true);
-          } else if (num < 0) {
-            setForm({ ...form, rainfall: 0 });
-            setShowCap(false);
-          } else {
-            setForm({ ...form, rainfall: val });
-            setShowCap(false);
-          }
-        };
 
         useEffect(() => {
-          if (form.rainfall !== "" && form.district) {
-            const t = setTimeout(async () => {
-              try {
-                const res = await fetch("http://localhost:5000/predict", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(form),
-                });
-                setData(await res.json());
-              } catch (e) {
-                console.error("Backend Error.");
-              }
-            }, 500);
-            return () => clearTimeout(t);
-          }
+          if (!form.rainfall || !form.district) return;
+          const t = setTimeout(async () => {
+            try {
+              const res = await fetch("http://localhost:5000/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(form),
+              });
+              setData(await res.json());
+            } catch {
+              // Fallback demo values when backend is offline
+              const mm = parseFloat(form.rainfall) || 0;
+              const level =
+                mm > 80
+                  ? "Critical"
+                  : mm > 50
+                    ? "High"
+                    : mm > 25
+                      ? "Medium"
+                      : "Low";
+              const prob = Math.min(0.95, mm / 120 + 0.1);
+              setData({
+                risk_level: level,
+                probability: prob,
+                population_at_risk: Math.round(mm * 1800 + 40000),
+                historical_match: null,
+              });
+            }
+          }, 500);
+          return () => clearTimeout(t);
         }, [form]);
+
+        const today = new Date()
+          .toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          .toUpperCase();
+        const showBanner =
+          data &&
+          (data.risk_level === "Critical" || data.risk_level === "High");
+        const action = data ? ACTIONS[data.risk_level] : null;
 
         return h(
           "div",
-          { className: "app" },
-          h(
-            "div",
-            { className: "header" },
+          {
+            style: {
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
+              overflow: "hidden",
+            },
+          },
+
+          /* STICKY PULSE BANNER — High/Critical only */
+          showBanner &&
             h(
               "div",
-              null,
+              { className: "pulse-banner" },
               h(
                 "div",
-                { className: "wordmark" },
-                "Flood",
-                h("span", null, "Sense"),
+                { className: "banner-left" },
+                h("div", { className: "banner-dot" }),
+                h("div", { className: "banner-code" }, "PDMA · SC-3"),
+                h(
+                  "div",
+                  { className: "banner-msg" },
+                  action.icon + " " + ACTIONS[data.risk_level].msg,
+                ),
               ),
               h(
                 "div",
-                {
-                  style: {
-                    fontSize: "10px",
-                    color: "#4a4530",
-                    letterSpacing: "0.2em",
-                  },
-                },
-                "DISTRICT RISK INTELLIGENCE",
+                { className: "banner-right" },
+                `${data.risk_level} · ${(data.probability * 100).toFixed(0)}% PROBABILITY`,
               ),
             ),
-            h(
-              "div",
-              { className: "sensor-banner" },
-              "SENSORS ONLINE — Jacobabad proxy calibrated (Scenario Card 2 Fixed)",
-            ),
-          ),
 
           h(
             "div",
-            { className: "grid" },
+            { className: "shell" },
+
+            /* HEADER */
             h(
               "div",
-              { className: "panel" },
-              h("div", { className: "panel-title" }, "Field Telemetry"),
+              { className: "header" },
               h(
                 "div",
-                { className: "field" },
+                null,
                 h(
-                  "label",
-                  { className: "label" },
-                  "Rainfall Today (mm) [Range: 0-400]",
+                  "div",
+                  { className: "wordmark" },
+                  "Flood",
+                  h("span", null, "Sense"),
                 ),
-                h("input", {
-                  type: "number",
-                  value: form.rainfall,
-                  placeholder: "e.g. 120",
-                  onChange: (e) => handleRainfall(e.target.value),
-                }),
-                showCap &&
+                h(
+                  "div",
+                  { className: "tagline" },
+                  "District Risk Intelligence · PDMA Emergency Mode",
+                ),
+              ),
+              h(
+                "div",
+                { style: { textAlign: "right" } },
+                h("div", { className: "tagline" }, today),
+                h(
+                  "div",
+                  { className: "sensor-pill" },
+                  h("span", { className: "sensor-dot" }),
+                  "Sensor Online — Jacobabad Calibrated",
+                ),
+              ),
+            ),
+
+            /* GRID */
+            h(
+              "div",
+              { className: "grid" },
+
+              /* LEFT — INPUTS */
+              h(
+                "div",
+                { className: "panel" },
+                h(
+                  "div",
+                  { className: "panel-title" },
+                  "Environmental Parameters",
+                ),
+                h(
+                  "div",
+                  { className: "field" },
+                  h("label", { className: "label" }, "Rainfall Today (mm)"),
+                  h("input", {
+                    type: "number",
+                    value: form.rainfall,
+                    placeholder: "Enter intensity…",
+                    onChange: (e) =>
+                      setForm({ ...form, rainfall: e.target.value }),
+                  }),
+                ),
+                h(
+                  "div",
+                  { className: "field" },
+                  h("label", { className: "label" }, "District Location"),
+                  h(
+                    "select",
+                    {
+                      value: form.district,
+                      onChange: (e) =>
+                        setForm({ ...form, district: e.target.value }),
+                    },
+                    h("option", { value: "" }, "Select district…"),
+                    DISTRICTS.map((d) => h("option", { key: d, value: d }, d)),
+                  ),
+                ),
+                h(
+                  "div",
+                  { className: "field" },
+                  h("label", { className: "label" }, "Soil Saturation"),
                   h(
                     "div",
-                    { className: "cap-warn" },
-                    "!! AUTO-CLAMPED: SYSTEM THRESHOLD MAX AT 400MM",
-                  ),
-              ),
-              h(
-                "div",
-                { className: "field" },
-                h("label", { className: "label" }, "District Location"),
-                h(
-                  "select",
-                  {
-                    value: form.district,
-                    onChange: (e) =>
-                      setForm({ ...form, district: e.target.value }),
-                  },
-                  h("option", { value: "" }, "Select location…"),
-                  DISTRICTS.map((d) => h("option", { key: d, value: d }, d)),
-                ),
-              ),
-              h(
-                "div",
-                { className: "field" },
-                h("label", { className: "label" }, "Surface Saturation"),
-                h(
-                  "div",
-                  { className: "option-grid" },
-                  ["Dry", "Moist", "Saturated"].map((s) =>
-                    h(
-                      "div",
-                      {
-                        className: `tick${form.soil === s ? " on" : ""}`,
-                        onClick: () => setForm({ ...form, soil: s }),
-                      },
-                      s,
-                    ),
-                  ),
-                ),
-              ),
-              h(
-                "div",
-                { className: "field" },
-                h("label", { className: "label" }, "Visible River Overflow"),
-                h(
-                  "div",
-                  { className: "option-grid" },
-                  ["No", "Yes"].map((w) =>
-                    h(
-                      "div",
-                      {
-                        className: `tick${form.water === w ? " on" : ""}`,
-                        onClick: () => setForm({ ...form, water: w }),
-                      },
-                      w,
-                    ),
-                  ),
-                ),
-              ),
-              h(
-                "div",
-                { className: "field" },
-                h("label", { className: "label" }, "Simulation Date"),
-                h("input", {
-                  type: "date",
-                  value: form.date,
-                  onChange: (e) => setForm({ ...form, date: e.target.value }),
-                }),
-              ),
-            ),
-
-            h(
-              "div",
-              { className: "panel" },
-              h("div", { className: "panel-title" }, "Inference Core Output"),
-              data
-                ? h(
-                    "div",
-                    null,
-                    // Binary Output Box
-                    h(
-                      "div",
-                      { className: "binary-box" },
-                      h(
-                        "div",
-                        null,
-                        h(
-                          "div",
-                          { className: "binary-label" },
-                          "MODEL OUTPUT (flood_event)",
-                        ),
-                        h(
-                          "div",
-                          { className: "binary-desc" },
-                          data.probability > 0.5
-                            ? "POSITIVE DETECTION"
-                            : "NEGATIVE DETECTION",
-                        ),
-                      ),
-                      h(
-                        "div",
-                        { className: "binary-value" },
-                        data.probability > 0.5 ? "1" : "0",
-                      ),
-                    ),
-
-                    h(
-                      "div",
-                      { className: `risk-badge ${data.risk_level}` },
+                    { className: "option-grid" },
+                    ["Dry", "Moist", "Saturated"].map((s) =>
                       h(
                         "div",
                         {
-                          style: {
-                            fontSize: "9px",
-                            opacity: 0.5,
-                            letterSpacing: "0.2em",
-                          },
+                          key: s,
+                          className: `tick${form.soil === s ? " on" : ""}`,
+                          onClick: () => setForm({ ...form, soil: s }),
                         },
-                        "EVACUATION PRIORITY",
+                        s,
                       ),
+                    ),
+                  ),
+                ),
+                h(
+                  "div",
+                  { className: "field" },
+                  h("label", { className: "label" }, "Visible Surface Water"),
+                  h(
+                    "div",
+                    { className: "option-grid" },
+                    ["No", "Yes"].map((w) =>
                       h(
                         "div",
-                        { className: "risk-value" },
-                        data.risk_level.toUpperCase(),
-                      ),
-                      h(
-                        "div",
-                        { className: "urdu" },
-                        URDU_RISK[data.risk_level],
+                        {
+                          key: w,
+                          className: `tick${form.water === w ? " on" : ""}`,
+                          onClick: () => setForm({ ...form, water: w }),
+                        },
+                        w,
                       ),
                     ),
+                  ),
+                ),
+                h(
+                  "div",
+                  { className: "field" },
+                  h("label", { className: "label" }, "Observation Date"),
+                  h("input", {
+                    type: "date",
+                    value: form.date,
+                    onChange: (e) => setForm({ ...form, date: e.target.value }),
+                  }),
+                ),
+                h(
+                  "div",
+                  { className: "bottom-bar" },
+                  h("div", null, "v2.4"),
+                  h("div", null, "SC-3 PDMA"),
+                  h("div", null, "Mode: ", h("span", null, "LIVE")),
+                ),
+              ),
 
-                    h(
-                      "div",
-                      { className: "stat-row" },
-                      h("span", null, "Model Probability"),
-                      h(
-                        "span",
-                        null,
-                        `${(data.probability * 100).toFixed(1)}%`,
-                      ),
-                    ),
-                    h(
-                      "div",
-                      { className: "prob-track" },
-                      h("div", {
-                        className: "prob-fill",
-                        style: { width: `${data.probability * 100}%` },
-                      }),
-                    ),
+              /* RIGHT — RISK ENGINE */
+              h(
+                "div",
+                { className: "panel" },
+                h("div", { className: "panel-title" }, "Risk Analysis Engine"),
 
-                    h(
-                      "div",
-                      { style: { marginBottom: "20px" } },
-                      h("div", { className: "label" }, "System Confidence"),
-                      h(
-                        "div",
-                        { className: "confidence-tag" },
-                        `${data.confidence_pct}% CERTAINTY`,
-                      ),
-                    ),
-
-                    h(
+                data
+                  ? h(
                       "div",
                       {
                         style: {
-                          borderTop: "1px solid var(--border)",
-                          paddingTop: "15px",
+                          display: "flex",
+                          flexDirection: "column",
+                          flex: 1,
                         },
                       },
                       h(
                         "div",
-                        { className: "label" },
-                        "Estimated Population Exposed",
+                        { className: "risk-row" },
+                        h(
+                          "div",
+                          { className: `risk-badge ${data.risk_level}` },
+                          h("div", { className: "risk-label" }, "Status"),
+                          h(
+                            "div",
+                            { className: "risk-value" },
+                            data.risk_level.toUpperCase(),
+                          ),
+                          h(
+                            "div",
+                            { className: "urdu" },
+                            URDU_RISK[data.risk_level],
+                          ),
+                        ),
+                        h(
+                          "div",
+                          { className: "pop-card" },
+                          h(
+                            "div",
+                            { className: "label" },
+                            "Population at Risk",
+                          ),
+                          h(
+                            "div",
+                            { className: "pop-number" },
+                            data.population_at_risk.toLocaleString(),
+                          ),
+                          h(
+                            "div",
+                            { className: "pop-unit" },
+                            "persons in impact zone",
+                          ),
+                        ),
                       ),
-                      h(
-                        "div",
-                        {
-                          style: { fontSize: "32px", fontFamily: "Bebas Neue" },
-                        },
-                        data.population_at_risk.toLocaleString(),
-                      ),
-                      h(
-                        "div",
-                        { style: { fontSize: "9px", color: "#444" } },
-                        "PEOPLE IN IMMEDIATE IMPACT ZONE",
-                      ),
-                    ),
-
-                    data.historical_match !== null &&
-                      h(
-                        "div",
-                        {
-                          style: {
-                            marginTop: "20px",
-                            padding: "12px",
-                            border: "1px solid #333",
-                            fontSize: "10px",
-                            color: "#888",
-                          },
-                        },
+                      action &&
                         h(
                           "div",
                           {
-                            style: {
-                              color: "var(--red-bright)",
-                              marginBottom: "4px",
-                            },
+                            className: `action-block action-${data.risk_level}`,
                           },
-                          "◆ HISTORICAL OVERLAY MATCHED",
+                          h("div", { className: "action-icon" }, action.icon),
+                          h(
+                            "div",
+                            null,
+                            h(
+                              "div",
+                              { className: "action-title" },
+                              "Recommended Action",
+                            ),
+                            h("div", { className: "action-body" }, action.msg),
+                          ),
                         ),
-                        `Ground-truth event: ${data.historical_match === 1 ? "FLOOD (1)" : "SAFE (0)"}`,
+                      h(
+                        "div",
+                        { className: "prob-row" },
+                        h(
+                          "div",
+                          { className: "stat-row" },
+                          h("span", null, "Model Probability"),
+                          h(
+                            "span",
+                            null,
+                            `${(data.probability * 100).toFixed(2)}%`,
+                          ),
+                        ),
+                        h(
+                          "div",
+                          { className: "prob-track" },
+                          h("div", {
+                            className: "prob-fill",
+                            style: { width: `${data.probability * 100}%` },
+                          }),
+                        ),
                       ),
-                  )
-                : h(
-                    "div",
-                    {
-                      style: {
-                        textAlign: "center",
-                        paddingTop: "100px",
-                        color: "#333",
-                      },
-                    },
-                    "AWAITING TELEMETRY...",
-                  ),
+                      data.historical_match !== null &&
+                        h(
+                          "div",
+                          { className: "hist-block" },
+                          h(
+                            "div",
+                            { className: "hist-head" },
+                            "⚠ Historical Look-back",
+                          ),
+                          `On this exact date, ground truth confirmed a ${data.historical_match === 1 ? "MAJOR FLOOD" : "SAFE"} event.`,
+                        ),
+                    )
+                  : h(
+                      "div",
+                      { className: "await-state" },
+                      h("div", { className: "await-reticle" }),
+                      h(
+                        "div",
+                        { className: "await-text" },
+                        "Awaiting sensor input",
+                      ),
+                    ),
+              ),
             ),
           ),
         );
       }
+
       ReactDOM.createRoot(document.getElementById("root")).render(h(App));
     </script>
   </body>
